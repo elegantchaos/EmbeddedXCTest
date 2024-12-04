@@ -8,15 +8,15 @@ import XCTest
 
 class SomeTests: InjectedTestCase<InjectionObserver> {
   func testInjecting() {
-    XCTFail("hello from \(self)")
+    print("hello from \(self)")
   }
 
   func testInjecting2() {
-    XCTFail("hello from \(self)")
+    print("hello from \(self)")
   }
 
   func testInjecting3() {
-    XCTFail("hello from \(self)")
+    print("hello from \(self)")
   }
 }
 
@@ -74,10 +74,11 @@ class InjectionObserver: NSObject, XCTestObservation, TestInjector {
   }
 
   var injectedSuites: [XCTestSuite] = []
+  var injectedSuite: XCTestSuite?
+  var failures = 0
   var isInitialised = false
   var isRunning = false
   var _log: [String] = []
-  var outerSuite: XCTestSuite?
 
   func log(_ message: String) {
     _log.append(message)
@@ -95,11 +96,28 @@ class InjectionObserver: NSObject, XCTestObservation, TestInjector {
     log("\(testSuite) recorded \(expectedFailure)")
   }
 
+  func testCase(
+    _ testCase: XCTestCase, didFailWithDescription description: String, inFile filePath: String?,
+    atLine lineNumber: Int
+  ) {
+    failures += 1
+    log("\(testCase) failed \(description) at \(filePath!):\(lineNumber)")
+  }
+
   func testSuiteWillStart(_ testSuite: XCTestSuite) {
     log("testSuiteWillStart \(testSuite)")
   }
 
   func registerSuite(_ suite: XCTestSuite) {
+    // if injectedSuite == nil {
+    //   let def = XCTestSuite.default
+    //   injectedSuite = XCTestSuite(name: "All Injected")
+    //   def.addTest(injectedSuite!)
+    //   for test in def.tests {
+    //     print("def test \(test)")
+    //   }
+    // }
+
     if !isRunning {
       let injected = XCTestSuite(name: "Injected-\(suite.name)")
       for test in suite.tests {
@@ -116,6 +134,15 @@ class InjectionObserver: NSObject, XCTestObservation, TestInjector {
     if testSuite.className == "XCTestCaseSuite" {
       registerSuite(testSuite)
     }
+
+    // if (testSuite.name == "All Tests") || (testSuite.name == "Selected Tests") {
+    //   log("finished running all tests")
+    //   let all = XCTestSuite(name: "All Injected Tests")
+    //   for suite in injectedSuites {
+    //     all.addTest(suite)
+    //   }
+    //   testSuite.addTest(all)
+    // }
   }
 
   func testCaseWillStart(_ testCase: XCTestCase) {
@@ -127,19 +154,24 @@ class InjectionObserver: NSObject, XCTestObservation, TestInjector {
   }
 
   func testBundleDidFinish(_ testBundle: Bundle) {
-    if let outer = outerSuite {
-    }
-    isRunning = true
     log("Got \(injectedSuites.count) injected suites")
+    let all = XCTestSuite(name: "All Injected Tests")
     for suite in injectedSuites {
-      suite.run()
-      //   let run = XCTestSuiteRun(test: suite)
-      //   run.start()
-
-      //   run.executionCount
+      all.addTest(suite)
     }
+
+    isRunning = true
+    // let r = XCTestSuiteRun(test: all)
+    // r.start()
+    // all.perform(r)
+    all.run()
     isRunning = false
+
     log("testBundleDidFinish \(testBundle)")
-    print(_log.joined(separator: "\n"))
+
+    if failures > 0 {
+      exit(Int32(failures))
+    }
+    // print(_log.joined(separator: "\n"))
   }
 }

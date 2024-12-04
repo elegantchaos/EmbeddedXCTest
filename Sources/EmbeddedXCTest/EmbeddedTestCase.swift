@@ -5,19 +5,23 @@
 
 import XCTest
 
+/// Superclass for test cases that are embedded.
+///
+/// When running normally, the tests will be silent and will do nothing.
+/// When re-run the embedded context, the test case will perform its normal
+/// actions.
 open class EmbeddedTestCase<T: TestHost>: XCTestCase {
-
   open override var testRunClass: AnyClass? {
-    T.instance.isRunning ? SilentTestRun.self : super.testRunClass
+    EmbeddingController.isRunningEmbedded ? SilentTestRun.self : super.testRunClass
   }
 
   public override static func setUp() {
-    T.installHooks()
+    EmbeddingController.setUp(hostClass: T.self)
     super.setUp()
   }
 
   open override func run() {
-    if T.instance.isRunning {
+    if EmbeddingController.isRunningEmbedded {
       super.run()
     }
   }

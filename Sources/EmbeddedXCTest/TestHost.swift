@@ -5,19 +5,13 @@
 
 import Foundation
 
+/// Implement this protocol to provide a custom test host.
 public protocol TestHost {
-  var isRunning: Bool { get set }
-  func log(_ message: String)
-  static var instance: TestHost { get }
-  static func installHooks()
-}
+  /// Create the host.
+  init()
 
-open class SimpleTestHost: InjectionObserver {
-  public override func runEmbeddedTests() -> Int {
-    let failures = super.runEmbeddedTests()
-    if failures > 0 {
-      exit(Int32(failures))
-    }
-    return failures
-  }
+  /// Perform any necessary setup, then call the supplied
+  /// closure to run the tests.
+  /// The closure returns the number of failures.
+  func embedTests(_ runner: () -> Int)
 }

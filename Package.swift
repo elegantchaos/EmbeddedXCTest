@@ -8,15 +8,12 @@
 import Foundation
 import PackageDescription
 
-var dependencies: [Package.Dependency] = [
-  .package(url: "https://github.com/elegantchaos/ChaosTesting.git", from: "1.0.1")
-]
+var dependencies: [Package.Dependency] = []
 
 var plugins: [Target.PluginUsage] = []
 
-// Add in support for the ActionBuilder plugin if we're building with it.
 if ProcessInfo.processInfo.environment["RESOLVE_ACTION_PLUGINS"] != nil {
-  print("'action builder'")
+  // Optional support for the ActionBuilder plugin.
   dependencies.append(contentsOf: [
     .package(url: "https://github.com/elegantchaos/ActionBuilderPlugin.git", from: "2.0.0")
   ])
@@ -24,7 +21,7 @@ if ProcessInfo.processInfo.environment["RESOLVE_ACTION_PLUGINS"] != nil {
 }
 
 let package = Package(
-  name: "TestInjector",
+  name: "EmbeddedXCTest",
 
   platforms: [
     .macOS(.v12), .macCatalyst(.v15), .iOS(.v15), .tvOS(.v15), .watchOS(.v8),
@@ -32,8 +29,8 @@ let package = Package(
 
   products: [
     .library(
-      name: "TestInjector",
-      targets: ["TestInjector"]
+      name: "EmbeddedXCTest",
+      targets: ["EmbeddedXCTest"]
     )
   ],
 
@@ -41,16 +38,22 @@ let package = Package(
 
   targets: [
     .target(
-      name: "TestInjector",
+      name: "EmbeddedXCTest",
       dependencies: [],
       plugins: plugins
     ),
 
     .testTarget(
-      name: "TestInjectorTests",
+      name: "EmbeddedXCTestTests",
       dependencies: [
-        "TestInjector",
-        "ChaosTesting",
+        "EmbeddedXCTest"
+      ]
+    ),
+
+    .testTarget(
+      name: "MoreInjectorTests",
+      dependencies: [
+        "EmbeddedXCTest"
       ]
     ),
   ]

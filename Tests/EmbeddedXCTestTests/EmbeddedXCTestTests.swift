@@ -3,11 +3,11 @@
 //  All code (c) 2024 - present day, Sam Deane.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+import EmbeddedXCTest
 import Foundation
-import TestInjector
 import XCTest
 
-class SomeTests: InjectedTestCase<InjectionObserver> {
+class SomeTests: EmbeddedTestCase<SimpleTestHost> {
   func testInjecting() {
     print("hello from \(self)")
   }
@@ -21,7 +21,7 @@ class SomeTests: InjectedTestCase<InjectionObserver> {
   }
 }
 
-class MoreTests: InjectedTestCase<InjectionObserver> {
+class SomeMoreTests: EmbeddedTestCase<SimpleTestHost> {
   func testInjecting() {
     XCTFail("hello from \(self)")
   }

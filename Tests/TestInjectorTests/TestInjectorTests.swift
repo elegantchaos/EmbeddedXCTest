@@ -74,7 +74,7 @@ class InjectionObserver: NSObject, XCTestObservation, TestInjector {
   }
 
   var injectedSuites: [XCTestSuite] = []
-  var injectedSuite: XCTestSuite?
+  let injectedSuite = XCTestSuite(name: "Injected Tests")
   var failures = 0
   var isInitialised = false
   var isRunning = false
@@ -123,7 +123,7 @@ class InjectionObserver: NSObject, XCTestObservation, TestInjector {
       for test in suite.tests {
         injected.addTest(test)
       }
-      injectedSuites.append(injected)
+      injectedSuite.addTest(injected)
       log("added injected suite \(injected.name)")
     }
   }
@@ -154,20 +154,29 @@ class InjectionObserver: NSObject, XCTestObservation, TestInjector {
   }
 
   func testBundleDidFinish(_ testBundle: Bundle) {
-    log("Got \(injectedSuites.count) injected suites")
-    let all = XCTestSuite(name: "All Injected Tests")
-    for suite in injectedSuites {
-      all.addTest(suite)
-    }
+    print(
+      """
+
+      ----------------------------------------------------------
+      Running injected tests
+      ----------------------------------------------------------
+
+      """)
 
     isRunning = true
-    // let r = XCTestSuiteRun(test: all)
-    // r.start()
-    // all.perform(r)
-    all.run()
+    injectedSuite.run()
     isRunning = false
 
     log("testBundleDidFinish \(testBundle)")
+
+    print(
+      """
+
+      ----------------------------------------------------------
+
+      Finished running injected tests with \(failures) failures.
+
+      """)
 
     if failures > 0 {
       exit(Int32(failures))

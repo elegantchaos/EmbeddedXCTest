@@ -19,7 +19,7 @@ open class EmbeddedTestCase<T: TestHost>: XCTestCase {
   }
 
   open override class func setUp() {
-    EmbeddingController.setUp(hostClass: T.self, testClass: Self.self)
+    EmbeddingController.setUp(hostClass: T.self)
     super.setUp()
   }
 

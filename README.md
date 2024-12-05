@@ -8,12 +8,12 @@ When the tests run, the host will be instantiated and called with a closure
 that it can use to actually run the tests.
 
 The specific example that inspired this is SwiftGodot, where we want to be able to set up the Godot engine,
-and then run some tests it has been initialised.
+and then run some tests from "inside it", after it has been initialised.
 
-This is complicated using XCTest as there is no way to replace its main loop or to do setup work before
-the first tests run.
+This is complicated using XCTest as there is no way to replace its main loop or to wrap it so that you can
+do setup work before the first test runs, and after the last test runs.
 
-This package allows you do create a simple host class that looks something like this psuedo-code:
+This package allows you to create a simple host class that looks something like this psuedo-code:
 
 ```swift
 struct GodotHost {
@@ -76,3 +76,24 @@ and can then use the failure count it got back to call `exit()` if there were fa
 
 This isn't ideal, as it's a fast exit from the XCTest shell, but it's the only way
 I've found so far to get a non-zero status code back to the calling process.
+
+## Things To Be Aware Of
+
+Things aren't perfect, as the test suites run twice. 
+
+Individual tests are suppressed for the first run, but you still get the summary
+output, which reports that each suite ran 0 tests.
+
+This is followed by the embedded test run, with full output again.
+
+Because the suites run twice, you should be aware that the class-level `setUp`
+and `tearDown` methods also run twice. 
+
+If you override the class `setUp`, you must call on to `super.setUp` **first**.
+This ensures that the embedding engine is initialised correctly before the first
+test runs.
+
+If you then only want to do your custom setup work once, you can check the value
+of `EmbeddingController.isRunningEmbedded`, and only do your code when this is
+true. If you have cleanup code in `tearDown` you should perform a similar check
+there.

@@ -73,7 +73,7 @@ public class EmbeddingController: NSObject, XCTestObservation {
       """
 
       ----------------------------------------------------------
-      Running injected tests
+      Running embedded tests
       ----------------------------------------------------------
 
       """)
@@ -87,7 +87,7 @@ public class EmbeddingController: NSObject, XCTestObservation {
 
       ----------------------------------------------------------
 
-      Finished running injected tests with \(embeddedFailures.count) failures.
+      Finished running embedded tests with \(embeddedFailures.count) failures.
 
       """)
 

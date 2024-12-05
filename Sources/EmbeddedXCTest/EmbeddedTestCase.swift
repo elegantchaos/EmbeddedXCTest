@@ -11,12 +11,15 @@ import XCTest
 /// When re-run the embedded context, the test case will perform its normal
 /// actions.
 open class EmbeddedTestCase<T: TestHost>: XCTestCase {
+  override open var name: String {
+    return EmbeddingController.isRunningEmbedded ? "Embedded(\(super.name))" : super.name
+  }
   open override var testRunClass: AnyClass? {
     EmbeddingController.isRunningEmbedded ? SilentTestRun.self : super.testRunClass
   }
 
-  public override static func setUp() {
-    EmbeddingController.setUp(hostClass: T.self)
+  open override class func setUp() {
+    EmbeddingController.setUp(hostClass: T.self, testClass: Self.self)
     super.setUp()
   }
 

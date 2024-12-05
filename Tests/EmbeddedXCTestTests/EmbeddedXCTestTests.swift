@@ -8,16 +8,26 @@ import Foundation
 import XCTest
 
 class SomeTests: EmbeddedTestCase<SimpleTestHost> {
+  nonisolated(unsafe) static var didSetup = false
+
+  override class func setUp() {
+    didSetup = true
+    super.setUp()
+  }
+
   func testInjecting() {
     print("hello from \(self)")
+    XCTAssertTrue(Self.didSetup)
   }
 
   func testInjecting2() {
     print("hello from \(self)")
+    XCTAssertTrue(Self.didSetup)
   }
 
   func testInjecting3() {
     print("hello from \(self)")
+    XCTAssertTrue(Self.didSetup)
   }
 }
 

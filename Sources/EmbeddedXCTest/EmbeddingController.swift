@@ -35,6 +35,9 @@ public class EmbeddingController: NSObject, XCTestObservation {
   /// Are we currently running the embedded tests?
   var isRunningEmbedded = false
 
+  /// A map from test class names to the classes themselves.
+  var testClassMap: [String: XCTestCase.Type] = [:]
+
   /// Are the embedded tests currently running?
   public static var isRunningEmbedded: Bool { _instance?.isRunningEmbedded ?? false }
 
@@ -46,7 +49,7 @@ public class EmbeddingController: NSObject, XCTestObservation {
   /// Once the normal test run is complete, we re-run the tests that
   /// we've collected, with our isRunning flag set to true, so that
   /// the test bodies are actually executed.
-  public static func setUp(hostClass: TestHost.Type) {
+  public static func setUp(hostClass: TestHost.Type, testClass: XCTestCase.Type) {
     if _instance == nil {
       // turn off buffering on stdout so that we see the output immediately
       setbuf(__stdoutp, nil)
@@ -55,16 +58,28 @@ public class EmbeddingController: NSObject, XCTestObservation {
       _instance = observer
       XCTestObservationCenter.shared.addTestObserver(observer)
     }
+
+    // record a name -> class mapping for the test class
+    // we'll use this later to create EmbeddedTestCaseSuite instances
+    _instance!.testClassMap[String(describing: testClass)] = testClass
   }
 
   /// Record a test suite that has finished running.
   func registerSuite(_ suite: XCTestSuite) {
     if !isRunningEmbedded {
-      let injected = XCTestSuite(name: "Embedded-\(suite.name)")
-      for test in suite.tests {
-        injected.addTest(test)
+      if let testClass = testClassMap[suite.name] {
+        // assert(testClass == type(of: suite))
+        print(testClass)
+        print(type(of: suite))
+        print("got entry for \(suite.name) \(testClass)")
+        if let test = suite.tests.first as? XCTestCase {
+          let type = type(of: test)
+          assert(testClass == type)
+          let injected = EmbeddedTestCaseSuite(
+            for: type, tests: suite.tests)
+          embeddedSuite.addTest(injected)
+        }
       }
-      embeddedSuite.addTest(injected)
     }
   }
 
@@ -104,12 +119,14 @@ public class EmbeddingController: NSObject, XCTestObservation {
   public func testSuiteDidFinish(_ testSuite: XCTestSuite) {
     if testSuite.className == "XCTestCaseSuite" {
       registerSuite(testSuite)
+      // } else {
+      // print("SKIPPED \(testSuite) \(type(of: testSuite))")
     }
   }
 
   public func testBundleDidFinish(_ testBundle: Bundle) {
     host.embedTests {
-      runEmbeddedTests()
+      self.runEmbeddedTests()
     }
   }
 }

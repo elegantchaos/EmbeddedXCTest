@@ -44,3 +44,11 @@ class SomeMoreTests: EmbeddedTestCase<SimpleTestHost> {
     XCTFail("hello from \(self)")
   }
 }
+
+class NormalTests: XCTestCase {
+  nonisolated(unsafe) static var runCount = 0
+  func testNormalTest() {
+    Self.runCount += 1
+    XCTAssertTrue(Self.runCount == 1)
+  }
+}

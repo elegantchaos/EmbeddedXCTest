@@ -7,6 +7,8 @@ import EmbeddedXCTest
 import Foundation
 import XCTest
 
+// Tests deliberately in another test target; just to make sure that multi-target works ok.
+
 class MoreTests: EmbeddedTestCase<SimpleTestHost> {
   func testInjecting() {
     print("hello from \(self)")
